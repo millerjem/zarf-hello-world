@@ -13,4 +13,4 @@ components:
       kustomizations:
       - https://github.com/millerjem/zarf-hello-world/kustomize?ref=main
     images:
-      - docker.io/millerjohe607/zarf-hello-world:latest
+      - docker.io/johnemiller607/zarf-hello-world:latest
