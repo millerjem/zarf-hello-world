@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Function to get latest kind version
 get_latest_kind_version() {
@@ -25,39 +25,43 @@ kind_setup() {
     echo "Creating cluster... ${CN}"
     echo "In region... ${REGION}"
 
-    cat <<-EOF > kind-config.yaml
-    kind: Cluster
-    apiVersion: kind.x-k8s.io/v1alpha4
-    nodes:
-    - role: control-plane
-      image: kindest/node:${CLUSTER_VERSION}
-      kubeadmConfigPatches:
-      labels:
-        topology.kubernetes.io/region: ${REGION}
-        topology.kubernetes.io/zone: ${REGION}-a
-    - role: worker
-      image: kindest/node:${CLUSTER_VERSION}
-      kubeadmConfigPatches:
-      labels:
-        topology.kubernetes.io/region: ${REGION}
-        topology.kubernetes.io/zone: ${REGION}-a
-    - role: worker
-      image: kindest/node:${CLUSTER_VERSION}
-      kubeadmConfigPatches:
-      labels:
-        topology.kubernetes.io/region: ${REGION}
-        topology.kubernetes.io/zone: ${REGION}-a
-    EOF
+cat <<-EOF > kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  image: kindest/node:${CLUSTER_VERSION}
+  kubeadmConfigPatches:
+  labels:
+    topology.kubernetes.io/region: ${REGION}
+    topology.kubernetes.io/zone: ${REGION}-a
+- role: worker
+  image: kindest/node:${CLUSTER_VERSION}
+  kubeadmConfigPatches:
+  labels:
+    topology.kubernetes.io/region: ${REGION}
+    topology.kubernetes.io/zone: ${REGION}-a
+- role: worker
+  image: kindest/node:${CLUSTER_VERSION}
+  kubeadmConfigPatches:
+  labels:
+    topology.kubernetes.io/region: ${REGION}
+    topology.kubernetes.io/zone: ${REGION}-a
+EOF
     
     # Create cluster
-    kind create cluster --name="${CN}" --config=kind-config.yaml
+    kind create cluster --name="${CN}" --config=kind-config.yaml && echo "Successfully created ${CN}" || return;
+    kubectl config rename-context kind-${CN} ${CN}
     
     # Clean up config file
     rm kind-config.yaml
 
     # Install Cilium and Metallb
- .  install_cilium "$CN"
+    install_cilium "$CN"
     install_metallb "$CN"
+    
+    # Zarf init
+    zarf package deploy oci://ghcr.io/zarf-dev/packages/init:v0.54.0 --confirm
 }
 
 # Function to install cilium
@@ -100,34 +104,33 @@ install_metallb() {
     local CN=$1
     
     # Inspect the Docker network
-    OCTET=$(docker network inspect -f '{{.IPAM.Config}}' kind | sed 's/.*[0-9][0-9][0-9]\\.\\([0-9][0-9]\\)\\..*/\\1/')
+    OCTET=$(docker network inspect -f '{{.IPAM.Config}}' kind | sed 's/.*[0-9][0-9][0-9]\.\([0-9][0-9]\)\..*/\1/')
 
     # Install Metallb
-    METALLB_VERSION="0.14.3"
+    METALLB_VERSION="0.14.9"
     kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v$METALLB_VERSION/config/manifests/metallb-native.yaml --context ${CN}
     kubectl --context ${CN} wait --for=condition=Ready  pod -l app=metallb -n metallb-system --timeout=120s
-    kubectl apply --context ${CN} -f -<<-EOF
-    apiVersion: metallb.io/v1beta1
-    kind: IPAddressPool
-    metadata:
-      name: ip-pool
-      namespace: metallb-system
-    spec:
-      addresses:
-      - 172.${OCTET}.255.200-172.${OCTET}.255.250
-    ---
-    apiVersion: metallb.io/v1beta1
-    kind: L2Advertisement
-    metadata:
-      name: empty
-      namespace: metallb-system
-    spec:
-      ipAddressPools:
-      - ip-pool
-    EOF
+
+    echo "Adding IPPool..."
+
+cat <<EOF | kubectl apply --context ${CN} -f -
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: ip-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.${OCTET}.255.1-172.${OCTET}.255.25  
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: ip-advertisement
+  namespace: metallb-system
+EOF
 }
 
 # Main execution
-kcc dymium v1.33.1 us-gov-west-1
-
-
+kind_setup dymium v1.33.1 us-gov-west-1

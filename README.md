@@ -4,9 +4,65 @@ This repository contains a simple "Hello World" application packaged with Zarf.
 
 ## Prerequisites
 
-- Zarf CLI installed on your system
-- A Kubernetes cluster
-- Docker installed (for building the container)
+### System Requirements
+
+- Linux or macOS
+- Docker
+- Zarf CLI
+- Kind (Kubernetes in Docker)
+
+### Installation Instructions
+
+#### Linux
+
+```bash
+# Install Zarf
+wget https://github.com/defenseunicorns/zarf/releases/download/v0.54.0/zarf_0.54.0_linux_amd64.tar.gz
+mkdir -p /usr/local/bin
+sudo tar -xzf zarf_0.54.0_linux_amd64.tar.gz -C /usr/local/bin
+rm zarf_0.54.0_linux_amd64.tar.gz
+
+# Install Kind
+wget https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
+chmod +x kind-linux-amd64
+sudo mv kind-linux-amd64 /usr/local/bin/kind
+```
+
+#### macOS
+
+```bash
+# Install Zarf
+wget https://github.com/defenseunicorns/zarf/releases/download/v0.54.0/zarf_0.54.0_darwin_amd64.tar.gz
+mkdir -p /usr/local/bin
+sudo tar -xzf zarf_0.54.0_darwin_amd64.tar.gz -C /usr/local/bin
+rm zarf_0.54.0_darwin_amd64.tar.gz
+
+# Install Kind
+wget https://kind.sigs.k8s.io/dl/v0.22.0/kind-darwin-amd64
+chmod +x kind-darwin-amd64
+sudo mv kind-darwin-amd64 /usr/local/bin/kind
+
+# Alternatively, you can use Homebrew on macOS
+brew install kind
+brew install zarf
+```
+
+### Verification
+
+After installation, verify that both tools are working:
+
+```bash
+# Check Zarf version
+zarf version
+
+# Check Kind version
+kind version
+
+# Check Docker version
+docker --version
+```
+
+## Building the Application
 
 ## Building the Application
 
