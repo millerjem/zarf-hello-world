@@ -12,7 +12,7 @@ This repository contains a simple "Hello World" application packaged with Zarf.
 
 1. Build and push the Docker image using buildx:
 ```bash
-docker buildx build --push --platform linux/amd64 -t docker.io/johnemiller607/zarf-hello-world:latest .
+docker buildx build --push --platform linux/amd64,linux/arm64 -t docker.io/johnemiller607/zarf-hello-world:latest .
 ```
 
 ## Kubernetes Manifest Details
@@ -49,23 +49,22 @@ The kustomization.yaml file manages:
 Create a zarf.yaml file:
 ```yaml
 apiVersion: zarf.dev/v1alpha1
-kind: ZarfPackage
+kind: ZarfPackageConfig
 metadata:
   name: hello-world
 spec:
-  components:
-    - name: hello-world-app
-      files:
-        - path: zarf-hello-world:latest
-          containerImage: true
-          containerImageTag: latest
-      dependencies:
-        - kubernetes
-      kustomize:
-        path: kustomize
-        resources:
-          - deployment.yaml
-          - service.yaml
+  version: 0.0.1
+
+components:
+  - name: hello-world-app
+    required: true
+    manifests:
+    - name: hello-world-deployment
+      namespace: hello-world
+      kustomizations:
+      - https://github.com/millerjem/zarf-hello-world/kustomize?ref=main
+    images:
+      - docker.io/johnemiller607/zarf-hello-world:latest
 ```
 
 ## Deploying with Zarf
@@ -77,12 +76,13 @@ zarf init
 
 2. Package your application:
 ```bash
-zarf package create ./zarf.yaml
+zarf package create . -a amd64
+zarf package create . -a arm64
 ```
 
 3. Deploy the package:
 ```bash
-zarf package deploy ./zarf-hello-world.zarf.yaml
+zarf package deploy .
 ```
 
 ### Deployment Configuration
