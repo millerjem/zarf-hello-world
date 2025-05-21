@@ -1,0 +1,16 @@
+apiVersion: zarf.dev/v1alpha1
+kind: ZarfPackageConfig
+metadata:
+  name: hello-world
+  version: 0.0.1
+
+components:
+  - name: hello-world-app
+    required: true
+    manifests:
+    - name: hello-world-deployment
+      namespace: hello-world
+      kustomizations:
+      - https://github.com/millerjem/zarf-hello-world.git?ref=main
+    images:
+      - zarf-hello-world:latest
