@@ -11,6 +11,6 @@ components:
     - name: hello-world-deployment
       namespace: hello-world
       kustomizations:
-      - https://github.com/millerjem/zarf-hello-world.git?ref=main
+      - https://github.com/millerjem/zarf-hello-world/kustomize?ref=main
     images:
-      - zarf-hello-world:latest
+      - docker.io/millerjohe607/zarf-hello-world:latest

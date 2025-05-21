@@ -6,5 +6,5 @@ namePrefix: hello-world--
 
 images:
 - name: zarf-hello-world
-  newName: zarf-hello-world
+  newName: docker.io/millerjohe607/zarf-hello-world
   newTag: latest

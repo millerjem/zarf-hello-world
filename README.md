@@ -10,15 +10,9 @@ This repository contains a simple "Hello World" application packaged with Zarf.
 
 ## Building the Application
 
-1. Build the Docker image:
+1. Build and push the Docker image using buildx:
 ```bash
-docker build -t zarf-hello-world .
-```
-
-2. Push the image to your container registry (optional):
-```bash
-docker tag zarf-hello-world your-registry/zarf-hello-world:latest
-docker push your-registry/zarf-hello-world:latest
+docker buildx build --push --platform linux/amd64 -t docker.io/millerjohe607/zarf-hello-world:latest .
 ```
 
 ## Kubernetes Manifest Details
