@@ -90,10 +90,10 @@ install_cilium() {
       CILIUM_CLI_VERSION=${VERSION##*/}
       CLI_ARCH=amd64
       if [ "$(uname -m)" = "arm64" ]; then CLI_ARCH=arm64; fi
-      curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-darwin-${CLI_ARCH}.tar.gz{,.sha256sum}
-      shasum -a 256 -c cilium-darwin-${CLI_ARCH}.tar.gz.sha256sum
-      tar xzvfC cilium-darwin-${CLI_ARCH}.tar.gz ~/bin
-      rm cilium-darwin-${CLI_ARCH}.tar.gz{,.sha256sum}
+      curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+      shasum -a 256 -c cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
+      tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz ~/bin
+      rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
     fi
 
     echo "Check cilium status"
