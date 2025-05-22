@@ -82,7 +82,8 @@ install_cilium() {
       --namespace kube-system \
       --set image.pullPolicy=IfNotPresent \
       --set ipam.mode=kubernetes
-
+   
+    mkdir -p ~/bin
     FILE=~/bin/cilium
     if [ ! -f "$FILE" ]; then
       VERSION=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/cilium/cilium-cli/releases/latest)
