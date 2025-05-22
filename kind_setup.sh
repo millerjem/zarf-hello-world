@@ -28,7 +28,6 @@ kind_setup() {
     for i in "${APPS[@]}"; do
       if ! command -v $i &> /dev/null; then
           printf '\e[0;31m\u2718 '$i'\e[0m\n'
-          echo Set
           NOTIFY=1
       else
           printf '\e[0;32m\u2714 '$i'\e[0m\n'
@@ -71,7 +70,7 @@ nodes:
 EOF
     
     # Create cluster
-    kind create cluster --name="${CN}" --config=kind-config.yaml && echo "Successfully created ${CN}" || return;
+    kind create cluster --name="${CN}" --config=kind-config.yaml && printf '\e[0;32m\u2714 'Successfully created $CN'\e[0m\n' || return;
     # kubectl config rename-context kind-${CN} ${CN}
     
     # Clean up config file
@@ -106,13 +105,12 @@ install_cilium() {
     CILIUM_VERSION=${VERSION##*/}
 
     docker pull quay.io/cilium/cilium:$CILIUM_VERSION
-    # kind load docker-image quay.io/cilium/cilium:$CILIUM_VERSION --name $CN
 
     helm install cilium cilium/cilium --version $CILIUM_VERSION \
       --namespace kube-system \
       --set image.pullPolicy=IfNotPresent \
       --set ipam.mode=kubernetes
-   
+    printf '\e[0;32m\u2714 'Installed cilium'\e[0m\n'
     LOCAL_BIN=~/.local/bin
     FILE=${LOCAL_BIN}/cilium
     if [ ! -f "$FILE" ]; then
@@ -129,14 +127,14 @@ install_cilium() {
           amd64) CLI_ARCH=arm64 ;;
           arm64) CLI_ARCH=arm64 ;;
         esac
-        echo "Downloading cilium-$OS-$CLI_ARCH.tar.gz"
+        printf '\e[0;32m 'Downloading cilium-$OS-$CLI_ARCH.tar.gz'\e[0m\n'
         curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-${OS}-${CLI_ARCH}.tar.gz{,.sha256sum}
         shasum -a 256 -c cilium-${OS}-${CLI_ARCH}.tar.gz.sha256sum
         tar xzvfC cilium-${OS}-${CLI_ARCH}.tar.gz $LOCAL_BIN
         rm cilium-${OS}-${CLI_ARCH}.tar.gz{,.sha256sum}
     fi
 
-    echo "Check cilium status"
+    printf '\e[0;32m 'Check cilium status...'\e[0m\n'
     $LOCAL_BIN/cilium status --wait --context ${CN}
 }
 
@@ -152,7 +150,7 @@ install_metallb() {
     kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v$METALLB_VERSION/config/manifests/metallb-native.yaml --context ${CN}
     kubectl --context ${CN} wait --for=condition=Ready  pod -l app=metallb -n metallb-system --timeout=120s
 
-    echo "Adding IPPool..."
+    printf '\e[0;32m 'Adding IPPool...'\e[0m\n'
 
 cat <<EOF | kubectl apply --context ${CN} -f -
 ---
