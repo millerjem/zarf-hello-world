@@ -129,6 +129,9 @@ kind: L2Advertisement
 metadata:
   name: ip-advertisement
   namespace: metallb-system
+spec:
+  ipAddressPools:
+  - ip-pool
 EOF
 }
 
