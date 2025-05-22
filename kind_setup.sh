@@ -14,6 +14,27 @@ get_latest_kind_version() {
 # Function to create kind cluster
 alias kcc='kind_setup'
 kind_setup() {
+
+    # Check for supporting commands
+    echo "Verifying prerequisites"
+    APPS=(
+      docker
+      helm
+      kind
+      kubectl
+      tar
+    )
+    NOTIFY=0
+    for i in "${APPS[@]}"; do
+      if ! command -v $i &> /dev/null; then
+          printf '\e[0;31m\u2718 '$i'\e[0m\n'
+          echo Set
+          NOTIFY=1
+      else
+          printf '\e[0;32m\u2714 '$i'\e[0m\n'
+      fi
+    done
+    [[ NOTIFY -eq 1 ]] && (echo "Please install the required commands"; return)
     local CLUSTER_NAME=${1:-$(basename "$PWD")}
     local CLUSTER_VERSION=${2:-$(get_latest_kind_version)}
     local REGION=${3:-us-gov-east-1}
@@ -51,7 +72,7 @@ EOF
     
     # Create cluster
     kind create cluster --name="${CN}" --config=kind-config.yaml && echo "Successfully created ${CN}" || return;
-    kubectl config rename-context kind-${CN} ${CN}
+    # kubectl config rename-context kind-${CN} ${CN}
     
     # Clean up config file
     rm kind-config.yaml
@@ -72,32 +93,51 @@ install_cilium() {
     helm repo add cilium https://helm.cilium.io/
     helm repo update
     VERSION=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/cilium/cilium/releases/latest)
+    
+    # Default OS
+    OS=darwin
+    case $OSTYPE in
+        linux-gnu*) OS=linux ;;
+        darwin*) OS=darwin ;;
+    esac
+
+    printf '\e[0;32m\u2714 'OS=$OS'\e[0m\n'
+
     CILIUM_VERSION=${VERSION##*/}
-    CILIUM_SHA_TAG="sha256:bfeb3f1034282444ae8c498dca94044df2b9c9c8e7ac678e0b43c849f0b31746"
 
     docker pull quay.io/cilium/cilium:$CILIUM_VERSION
-    kind load docker-image quay.io/cilium/cilium:$CILIUM_VERSION
+    # kind load docker-image quay.io/cilium/cilium:$CILIUM_VERSION --name $CN
 
     helm install cilium cilium/cilium --version $CILIUM_VERSION \
       --namespace kube-system \
       --set image.pullPolicy=IfNotPresent \
       --set ipam.mode=kubernetes
    
-    mkdir -p ~/bin
-    FILE=~/bin/cilium
+    LOCAL_BIN=~/.local/bin
+    FILE=${LOCAL_BIN}/cilium
     if [ ! -f "$FILE" ]; then
-      VERSION=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/cilium/cilium-cli/releases/latest)
-      CILIUM_CLI_VERSION=${VERSION##*/}
-      CLI_ARCH=amd64
-      if [ "$(uname -m)" = "arm64" ]; then CLI_ARCH=arm64; fi
-      curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
-      shasum -a 256 -c cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
-      tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz ~/bin
-      rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+        mkdir -p ${LOCAL_BIN}
+        VERSION=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/cilium/cilium-cli/releases/latest)
+        CILIUM_CLI_VERSION=${VERSION##*/}
+        echo "Downloading cilium CLI version $CILIUM_CLI_VERSION..."
+
+        # Default
+        CLI_ARCH=arm64
+        case $(uname -m) in
+          aarch64) CLI_ARCH=amd64 ;;
+          x86_64) CLI_ARCH=amd64 ;;
+          amd64) CLI_ARCH=arm64 ;;
+          arm64) CLI_ARCH=arm64 ;;
+        esac
+        echo "Downloading cilium-$OS-$CLI_ARCH.tar.gz"
+        curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-${OS}-${CLI_ARCH}.tar.gz{,.sha256sum}
+        shasum -a 256 -c cilium-${OS}-${CLI_ARCH}.tar.gz.sha256sum
+        tar xzvfC cilium-${OS}-${CLI_ARCH}.tar.gz $LOCAL_BIN
+        rm cilium-${OS}-${CLI_ARCH}.tar.gz{,.sha256sum}
     fi
 
     echo "Check cilium status"
-    ~/bin/cilium status --wait --context ${CN}
+    $LOCAL_BIN/cilium status --wait --context ${CN}
 }
 
 # Function to install metallb
