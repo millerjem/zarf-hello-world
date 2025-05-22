@@ -17,15 +17,17 @@ This repository contains a simple "Hello World" application packaged with Zarf.
 
 ```bash
 # Install Zarf
-wget https://github.com/defenseunicorns/zarf/releases/download/v0.54.0/zarf_0.54.0_linux_amd64.tar.gz
-mkdir -p /usr/local/bin
-sudo tar -xzf zarf_0.54.0_linux_amd64.tar.gz -C /usr/local/bin
-rm zarf_0.54.0_linux_amd64.tar.gz
+ZARF_VERSION=$(curl -sIX HEAD https://github.com/zarf-dev/zarf/releases/latest | grep -i ^location: | grep -Eo 'v[0-9]+.[0-9]+.[0-9]+')
+
+curl -sL "https://github.com/zarf-dev/zarf/releases/download/${ZARF_VERSION}/zarf_${ZARF_VERSION}_Linux_amd64" -o zarf
+chmod +x zarf
+sudo mv zarf /usr/local/bin/zarf
 
 # Install Kind
-wget https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
-chmod +x kind-linux-amd64
-sudo mv kind-linux-amd64 /usr/local/bin/kind
+# For AMD64 / x86_64
+[ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.29.0/kind-linux-amd64
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
 ```
 
 #### macOS
