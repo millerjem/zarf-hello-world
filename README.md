@@ -16,13 +16,51 @@ This repository contains a simple "Hello World" application packaged with Zarf.
 #### Linux
 
 ```bash
+# Install Docker-CE
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo usermod -aG docker $USER
+# Log out and log back in so that your group membership is re-evaluated.
+
+# Enable on boot with systemd
+sudo systemctl enable docker.service --now
+sudo systemctl enable containerd.service --now
+```
+
+```bash
+# Install Helm
+## From Apt (Debian/Ubuntu)
+
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get install apt-transport-https --yes
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+```
+
+```bash
 # Install Zarf
 ZARF_VERSION=$(curl -sIX HEAD https://github.com/zarf-dev/zarf/releases/latest | grep -i ^location: | grep -Eo 'v[0-9]+.[0-9]+.[0-9]+')
 
 curl -sL "https://github.com/zarf-dev/zarf/releases/download/${ZARF_VERSION}/zarf_${ZARF_VERSION}_Linux_amd64" -o zarf
 chmod +x zarf
 sudo mv zarf /usr/local/bin/zarf
+```
 
+```bash
 # Install Kind
 # For AMD64 / x86_64
 [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.29.0/kind-linux-amd64
@@ -66,13 +104,11 @@ docker --version
 
 ## Building the Application
 
-## Building the Application
-
 1. Build and push the Docker image using buildx:
+
 ```bash
 docker buildx build --push --platform linux/amd64,linux/arm64 -t docker.io/johnemiller607/zarf-hello-world:latest .
 ```
-
 ## Kubernetes Manifest Details
 
 ### Deployment Configuration
