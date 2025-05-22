@@ -97,7 +97,7 @@ install_cilium() {
     fi
 
     echo "Check cilium status"
-    cilium status --wait --context ${CN}
+    ~/bin/cilium status --wait --context ${CN}
 }
 
 # Function to install metallb
