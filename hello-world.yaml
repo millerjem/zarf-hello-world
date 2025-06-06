@@ -1,0 +1,13 @@
+apiVersion: saic.com/v1
+kind: MissionLabApplications
+metadata:
+  name: hello-world
+  annotations:
+    ml/ingress: internal
+    ml/owner-email: "john.e.miller@saic.com"
+    ml/managed-by: "john.e.miller@saic.com"
+    ml/software-license: MIT
+    ml/license: community
+spec:
+  version: 0.10.0
+  application: hello-world
