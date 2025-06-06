@@ -8,6 +8,10 @@ components:
   - name: hello-world-app
     required: true
     manifests:
+    - name: mission-lab-application
+      namespace: hello-world
+      files:
+      - hello-world.yaml
     - name: hello-world-deployment
       namespace: hello-world
       kustomizations:
