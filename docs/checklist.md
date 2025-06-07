@@ -1,7 +1,5 @@
 # Mission Lab Deployment Checklist
 
-[Back](history.go(1))
-
 ## Prerequisites
 - [ ] Install Zarf CLI (`brew install zarf`)
 - [ ] Install UDS CLI (`brew install defenseunicorns/tap/uds`)
