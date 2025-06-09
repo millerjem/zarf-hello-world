@@ -15,7 +15,7 @@ Process for Deploying Mission-Critical Applications
 8. Testing
 9. Deploying to Mission Lab
 
-[Deployment Checklist](checklist.md)
+Deployment Checklist
 
 Best Practices
 
