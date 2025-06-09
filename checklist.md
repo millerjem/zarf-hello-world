@@ -1,9 +1,12 @@
+## Deployment Checklist
+```markdown
 # Mission Lab Deployment Checklist
 
 ## Prerequisites
 - [ ] Install Zarf CLI (`brew install zarf`)
 - [ ] Install UDS CLI (`brew install defenseunicorns/tap/uds`)
-- [ ] Set up a Kubernetes cluster (e.g., k3s, k3d)
+- [ ] Install UDS CLI (`brew install defenseunicorns/tap/lula`)
+- [ ] Set up a Kubernetes cluster (e.g., k0s, kind, k3s, k3d)
 - [ ] Verify access to Mission Lab environment
 - [ ] Configure MinIO for multi-tenant storage
 - [ ] Ensure Tenjin and Koverse are available for ML/DL/AI (if needed)
@@ -90,3 +93,4 @@
 - [ ] Monitor application performance
 - [ ] Update packages/bundles as needed (`zarf package create`, `uds create`)
 - [ ] Document issues, configurations, Pepr exceptions, and registry details in the Git repository
+```
