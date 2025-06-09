@@ -1,0 +1,24 @@
+apiVersion: zarf.dev/v1alpha1
+kind: ZarfPackageConfig
+metadata:
+  name: hello-world
+  version: 0.0.1
+
+components:
+  - name: hello-world-app
+    required: true
+      charts:
+      - name: hello-world-local
+        version: 
+        namespace: hello-world
+        localPath: chart
+        valuesFiles:
+          - values.yaml
+        # Variables are used to override the default values in the chart
+        # This can be overridden by the user at deployment time with the `--set` flag
+        variables:
+          - name: REPLICA_COUNT
+            description: "Override the number of pod replicas"
+            path: replicaCount
+    images:
+      - docker.io/johnemiller607/zarf-hello-world:latest
