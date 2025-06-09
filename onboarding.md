@@ -5,10 +5,8 @@ Mission Lab is a Kubernetes-based environment designed to support cloud, on-prem
 
 ## Prerequisites
 - **Kubernetes Cluster**: A running Kubernetes cluster (e.g., k3s, k3d, or other distributions) compatible with Mission Lab.
-- **Zarf CLI**: Installed on both development and target machines. Installation instructions are available at [Zarf Documentation](https://docs.zarf.dev/). For Mac with Homebrew: `brew install zarf`.
-- **UDS CLI**: Installed for bundling and deploying UDS bundles. Install via Homebrew: `brew install defenseunicorns/tap/uds`.
-- **MinIO**: Configured for multi-tenant storage in Mission Lab.
-- **Tenjin and Koverse**: Available for ML/DL/AI capabilities, if required by the application.
+- **Zarf CLI**: Installed on both development and target machines. Installation instructions are available at [Zarf Documentation](https://docs.zarf.dev/). For Mac/Linux with Homebrew: `brew install zarf`.
+- **UDS CLI**: Installed for bundling and deploying UDS bundles. For Mac/Linux with Homebrew: `brew install defenseunicorns/tap/uds`.
 - **Git Repository**: A repository (e.g., similar to `zarf-hello-world`) containing application configurations.
 - **Access to Mission Lab**: Ensure access to the Mission Lab environment (cloud, on-premises, or disconnected).
 - **Company-Specific Registry**: Access to an OCI-compliant registry (e.g., Harbor, Artifactory, or a private Docker registry) for storing Zarf packages and UDS bundles.
@@ -41,36 +39,15 @@ Zarf packages encapsulate all necessary components, including Docker images, Hel
 - **Include Mission Lab Services**:
   Ensure integration with Mission Lab services (e.g., MinIO, Tenjin/Koverse). For example, configure MinIO access:
   ```yaml
-  components:
-    - name: minio-access
-      required: true
-      manifests:
-        - name: minio-secret
-          files:
-            - minio-secret.yaml
+  // Placeholder
   ```
-  Example `minio-secret.yaml`:
-  ```yaml
-  apiVersion: v1
-  kind: Secret
-  metadata:
-    name: minio-access
-    namespace: mission-lab
-  type: Opaque
-  data:
-    access-key: <base64-encoded-access-key>
-    secret-key: <base64-encoded-secret-key>
-  ```
-- **Leverage UDS Operator**:
-  Include a UDS Package Custom Resource in the `zarf.yaml` for compatibility with UDS Core.
-
 ### 2. Building Zarf Packages
 - **Create the Package**:
   In the directory containing `zarf.yaml`, run:
   ```bash
-  zarf package create
+  zarf package create --architecture <amd64 | arm64>
   ```
-  This generates a tarball (e.g., `zarf-package-podinfo-<arch>-0.0.1.tar.zst`).
+  This generates a tarball (e.g., `zarf-package-podinfo-<architecture>-0.0.1.tar.zst`).
 - **Handle Air-Gapped Environments**:
   Include all images and resources:
   ```bash
@@ -101,7 +78,7 @@ UDS bundles combine multiple Zarf packages into a single deployable artifact.
       repository: ghcr.io/defenseunicorns/uds-core
       ref: v0.1.0
     - name: podinfo
-      path: ./zarf-package-podinfo-<arch>-0.0.1.tar.zst
+      path: ./zarf-package-podinfo-<architecture>-0.0.1.tar.zst
   ```
 - **Include Mission Lab Services**:
   Add packages for MinIO, Tenjin, or Koverse:
@@ -114,9 +91,9 @@ UDS bundles combine multiple Zarf packages into a single deployable artifact.
 - **Create the Bundle**:
   Run:
   ```bash
-  uds create
+  uds create --architecture <amd64 | arm64>
   ```
-  This generates a tarball (e.g., `uds-bundle-mission-lab-bundle-<arch>-0.0.1.tar.zst`).
+  This generates a tarball (e.g., `uds-bundle-mission-lab-bundle-<architecture>-0.0.1.tar.zst`).
 
 ### 4. Accessing Company-Specific Registries
 Mission Lab deployments often require pulling Zarf packages or UDS bundles from a company-specific OCI-compliant registry (e.g., Harbor, Artifactory). This is critical for connected environments and may require additional configuration for air-gapped setups.
@@ -134,40 +111,14 @@ Mission Lab deployments often require pulling Zarf packages or UDS bundles from 
      ```bash
      uds registry login <registry-url> -u <username> -p <password>
      ```
-  4. **Store Credentials for Air-Gapped Environments**:
-     For disconnected deployments, create a secret in the `zarf.yaml` to include registry credentials:
-     ```yaml
-     components:
-       - name: registry-credentials
-         required: true
-         manifests:
-           - name: registry-secret
-             files:
-               - registry-secret.yaml
-     ```
-     Example `registry-secret.yaml`:
-     ```yaml
-     apiVersion: v1
-     kind: Secret
-     metadata:
-       name: registry-credentials
-       namespace: mission-lab
-     type: kubernetes.io/dockerconfigjson
-     data:
-       .dockerconfigjson: <base64-encoded-docker-config>
-     ```
-     Generate the `.dockerconfigjson` using:
-     ```bash
-     echo -n '{"auths":{"<registry-url>":{"username":"<username>","password":"<password>"}}}' | base64
-     ```
 - **Push Packages to Registry**:
   After building the Zarf package, push it to the company registry:
   ```bash
-  zarf package publish zarf-package-podinfo-<arch>-0.0.1.tar.zst oci://<registry-url>/mission-lab/podinfo:0.0.1
+  zarf package publish zarf-package-podinfo-<architecture>-0.0.1.tar.zst oci://<registry-url>/mission-lab/podinfo:0.0.1
   ```
   For UDS bundles:
   ```bash
-  uds publish uds-bundle-mission-lab-bundle-<arch>-0.0.1.tar.zst oci://<registry-url>/mission-lab:0.0.1
+  uds publish uds-bundle-mission-lab-bundle-<architecture>-0.0.1.tar.zst oci://<registry-url>/mission-lab:0.0.1
   ```
 - **Pull Packages from Registry**:
   In connected environments, pull packages during deployment:
@@ -191,17 +142,17 @@ Mission Lab deployments often require pulling Zarf packages or UDS bundles from 
   2. Transfer the resulting tarballs to the air-gapped environment via physical media (e.g., USB drive).
   3. Deploy as described in the deployment section.
 
-### 5. Using GitLab CI/CD Pipelines for Building and Validating
+### 5. Using Mission Lab GitLab CI/CD Pipelines for Building and Validating
 Mission Lab leverages GitLab CI/CD pipelines to automate the validation, building, integration, cleanup, and publishing of Zarf packages and UDS bundles. The pipeline ensures compliance with security standards and facilitates deployment to the company-specific registry.
 
 - **Accessing the GitLab Repository**:
   1. **Obtain Repository Access**:
-     Secure access to the GitLab repository (e.g., `https://gitlab.company.com/mission-lab`) through the GitLab administrator.
+     Secure access to the GitLab repository (e.g., `https://gitlab.sif.saicdevops.com/saic-labs/mission-lab`) through the GitLab administrator.
      Ensure your GitLab account has appropriate permissions (e.g., Developer or Maintainer) to push code and trigger pipelines.
   2. **Clone the Repository**:
      Clone the repository to your local machine:
      ```bash
-     git clone https://gitlab.company.com/mission-lab/<repository-name>.git
+     git clone https://gitlab.sif.saicdevops.com/saic-labs/mission-lab/<repository-name>.git
      ```
   3. **Configure GitLab Runner**:
      Ensure a GitLab Runner is configured for the repository with the necessary tools (Zarf CLI, UDS CLI, Lula, Cosign, container scanning tools).
@@ -213,10 +164,10 @@ Mission Lab leverages GitLab CI/CD pipelines to automate the validation, buildin
      git push origin main
      ```
   5. **Accessing Pipeline Artifacts**:
-     - After the pipeline completes, access Zarf packages and UDS bundles in the GitLab Artifacts section of the pipeline job.
-     - Download tarballs for deployment or transfer to air-gapped environments via physical media (e.g., USB drive).
-  6. **Transferring to Air-Gapped Environments**:
-     - Download the Zarf package or UDS bundle tarballs from the GitLab Artifacts.
+     Options 1:
+     - After the pipeline completes, access Zarf packages and UDS bundles in the GitLab Artifacts, Packages, or Registry section of the pipeline job.
+     - Pull packages/bundles or download tarballs for deployment or transfer to air-gapped environments via physical media (e.g., USB drive).
+  7. **Transferring to Air-Gapped Environments**:
      - Transfer the tarballs, along with Zarf CLI, UDS CLI, and `zarf init` package, to the air-gapped machine using secure physical media.
      - Follow the air-gapped deployment steps in the deployment section.
 
@@ -261,20 +212,26 @@ Mission Lab leverages GitLab CI/CD pipelines to automate the validation, buildin
 - **Validate Zarf Package**:
   Inspect package contents:
   ```bash
-  zarf package inspect zarf-package-podinfo-<arch>-0.0.1.tar.zst
+  zarf package inspect zarf-package-podinfo-<architecture>-0.0.1.tar.zst
   ```
 - **Validate UDS Bundle**:
   List images and components:
   ```bash
-  uds inspect uds-bundle-mission-lab-bundle-<arch>-0.0.1.tar.zst --list-images
+  uds inspect uds-bundle-mission-lab-bundle-<architecture>-0.0.1.tar.zst --list-images
   ```
 - **Check Compliance**:
   Use Lula for NIST OSCAL compliance:
   ```bash
-  uds lula validate
+  lula validate -f oscal-component-opa.yaml
+  ```
+  Use Lula to evalute the results in assessment-results.yaml:
+  ```bash
+  lula evaluate lula evaluate -f assessment-results.yaml
   ```
 - **Verify MinIO Integration**:
-  Ensure MinIO secrets and endpoints are correctly configured.
+  ```
+  // Placeholder
+  ```
 - **Verify Registry Access**:
   Confirm that packages/bundles can be pulled from the company registry:
   ```bash
@@ -289,12 +246,17 @@ Mission Lab uses Pepr to enforce security and compliance policies. If a package 
 - **Identify Policy Violations**:
   Attempt deployment:
   ```bash
-  uds deploy uds-bundle-mission-lab-bundle-<arch>-0.0.1.tar.zst --confirm
+  uds deploy uds-bundle-mission-lab-bundle-<architecture>-0.0.1.tar.zst --confirm
   ```
   Review Pepr logs for violations: `kubectl logs -n pepr-system <pepr-pod>`.
   Check GitLab pipeline logs for Pepr scan failures in the integration stage.
 - **Submit a Pepr Exception Request**:
-  1. **Document the Need**:
+  
+  1. **Naviagte to the Repository Root**
+     ```
+     cd <repository-name>
+     ```
+  2. **Create the Pepr Exception Document**:
      ```markdown
      # Pepr Exception Request
      **Package/Bundle**: mission-lab-bundle-0.0.1
@@ -303,10 +265,25 @@ Mission Lab uses Pepr to enforce security and compliance policies. If a package 
      **Mitigations**: Deploy in isolated namespace (`mission-lab-gpu`) with restricted RBAC.
      **Duration**: 6 months
      ```
-  2. **Submit to Admins**: Send to Mission Lab administrators via designated channels (e.g., GitLab issue or email).
-  3. **Include Artifacts**: Attach SBOM and Lula validation results from the GitLab pipeline artifacts.
-  4. **Specify Duration**: Request temporary or permanent exception.
-- **Apply the Exception**:
+     ```yaml
+     apiVersion: pepr.dev/v1alpha1
+     kind: PeprException
+     metadata:
+       name: example-exception
+       namespace: pepr-system  # Adjust namespace if different
+     spec:
+       exceptions:
+       - namespace: "<namespace>"  # Example: Exempt an entire namespace
+         resourceKind: "*"  # Exempt all resource kinds in this namespace
+       - namespace: "default"
+         resourceKind: "Pod"      # Exempt specific resource type
+         resourceName: "hello-world-*"  # Exempt resources matching this pattern
+         policy: enforce-pod-labels  # Specific policy to exempt
+     ```     
+  3. **Submit to Admins**: Send to Mission Lab administrators via designated channels (e.g., GitLab issue or email).
+  4. **Include Artifacts**: Attach SBOM and Lula validation results from the GitLab pipeline artifacts.
+  5. **Specify Duration**: Request temporary or permanent exception.
+- **Verify the Exception**:
   Admins update the Pepr configuration (e.g., ConfigMap in `pepr-system` namespace):
   ```yaml
   apiVersion: v1
@@ -320,10 +297,10 @@ Mission Lab uses Pepr to enforce security and compliance policies. If a package 
         pod: podinfo
         policy: no-privileged-containers
   ```
-- **Verify Exception**:
+- **Deploy with the Exception**:
   Redeploy via the GitLab pipeline or manually:
   ```bash
-  uds deploy uds-bundle-mission-lab-bundle-<arch>-0.0.1.tar.zst --confirm
+  uds deploy uds-bundle-mission-lab-bundle-<architecture>-0.0.1.tar.zst --confirm
   ```
   Confirm success in pipeline logs or deployment status.
 
@@ -332,11 +309,11 @@ Mission Lab uses Pepr to enforce security and compliance policies. If a package 
   Deploy to a local cluster:
   ```bash
   zarf init
-  zarf package deploy zarf-package-podinfo-<arch>-0.0.1.tar.zst
+  zarf package deploy zarf-package-podinfo-<architecture>-0.0.1.tar.zst
   ```
   or
   ```bash
-  uds deploy uds-bundle-mission-lab-bundle-<arch>-0.0.1.tar.zst
+  uds deploy uds-bundle-mission-lab-bundle-<architecture>-0.0.1.tar.zst
   ```
 - **Test Mission Lab Services**:
   - **MinIO**: Verify object storage functionality.
@@ -376,7 +353,7 @@ Mission Lab uses Pepr to enforce security and compliance policies. If a package 
      ```
   4. Deploy the bundle:
      ```bash
-     uds deploy uds-bundle-mission-lab-bundle-<arch>-0.0.1.tar.zst --confirm
+     uds deploy uds-bundle-mission-lab-bundle-<architecture>-0.0.1.tar.zst --confirm
      ```
 - **Verify Deployment**:
   Check resources:
@@ -392,7 +369,8 @@ Mission Lab uses Pepr to enforce security and compliance policies. If a package 
 ## Prerequisites
 - [ ] Install Zarf CLI (`brew install zarf`)
 - [ ] Install UDS CLI (`brew install defenseunicorns/tap/uds`)
-- [ ] Set up a Kubernetes cluster (e.g., k3s, k3d)
+- [ ] Install UDS CLI (`brew install defenseunicorns/tap/lula`)
+- [ ] Set up a Kubernetes cluster (e.g., k0s, kind, k3s, k3d)
 - [ ] Verify access to Mission Lab environment
 - [ ] Configure MinIO for multi-tenant storage
 - [ ] Ensure Tenjin and Koverse are available for ML/DL/AI (if needed)
