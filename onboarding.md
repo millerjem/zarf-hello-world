@@ -376,7 +376,7 @@ Mission Lab uses Pepr to enforce security and compliance policies. If a package 
 - [ ] Verify access to Mission Lab environment
 - [ ] Configure MinIO for multi-tenant storage
 - [ ] Ensure Tenjin and Koverse are available for ML/DL/AI (if needed)
-- [ ] Initialize Git repository for application configurations
+- [ ] Initialize Git repository for application configurations using the Mission Lab template
 - [ ] Review Pepr policies enforced in Mission Lab
 - [ ] Obtain credentials for company-specific registry
 - [ ] Verify access to company registry (e.g., Harbor, Artifactory)
@@ -459,6 +459,11 @@ Mission Lab uses Pepr to enforce security and compliance policies. If a package 
 - [ ] Monitor application performance
 - [ ] Update packages/bundles as needed (`zarf package create`, `uds create`)
 - [ ] Document issues, configurations, Pepr exceptions, and registry details in the Git repository
+
+## Placeholders
+- [ ] User authentication requirements
+- [ ] Ingress requirements
+- [ ] Identify external services
 ```
 
 ## Best Practices
