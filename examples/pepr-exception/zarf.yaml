@@ -1,0 +1,30 @@
+apiVersion: zarf.dev/v1alpha1
+kind: ZarfPackageConfig
+metadata:
+  name: hello-world
+  version: 0.0.1
+
+components:
+  - name: pepr-exemption
+    required: true
+    description: |
+      This component is used to create a Pepr exemption for the hello-world pod.
+      It allows the pod to run with privileged containers, which is necessary for this example.
+    manifests:
+      - name: pepr-exemption
+        namespace: hello-world
+        files:
+          - pepr-exceptions.yaml
+  - name: hello-world-app
+    required: true
+    charts:
+    - name: hello-world
+      version: 0.1.0 
+      namespace: hello-world
+      url: oci://docker.io/johnemiller607/hello-world
+      valuesFiles:
+        - values.yaml
+      # Variables are used to override the default values in the chart
+      # This can be overridden by the user at deployment time with the `--set` flag
+    images:
+      - docker.io/johnemiller607/zarf-hello-world:latest

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pepr-exemption
+  namespace: hello-world
+data:
+  exemptions: |
+    - namespace: hello-world
+      pod: hello-world
+      policy: no-privileged-containers

@@ -175,4 +175,4 @@ EOF
 }
 
 # Main execution
-kind_setup dymium v1.33.1 us-gov-west-1
+kind_setup dymium v1.31.9 us-gov-west-1
