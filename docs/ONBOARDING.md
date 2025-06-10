@@ -4,14 +4,14 @@
 Mission Lab is a Kubernetes-based environment designed to support cloud, on-premises, and disconnected (air-gapped) deployments for mission-critical applications. It provides services such as multi-tenant storage via MinIO and ML/DL/AI capabilities through Tenjin and Koverse. The only supported method for deploying applications into Mission Lab is through Zarf packages and UDS bundles, which ensure secure, declarative, and portable software delivery. This document details the process of creating, building, validating, testing, and deploying mission-critical applications in Mission Lab, including requesting Pepr exceptions to bypass cluster policies, accessing company-specific registries for package and bundle storage, and utilizing GitLab CI/CD pipelines for automation.
 
 ## Prerequisites
-- **Kubernetes Cluster**: A running Kubernetes cluster (e.g., k3s, k3d, or other distributions) compatible with Mission Lab.
+- **Kubernetes Cluster**: A running Kubernetes cluster (e.g., [k3s](https://k3s.io/), [k3d](https://k3d.io/stable/), or other distributions) compatible with Mission Lab.
 - **Zarf CLI**: Installed on both development and target machines. Installation instructions are available at [Zarf Documentation](https://docs.zarf.dev/). For Mac/Linux with Homebrew: `brew install zarf`.
-- **UDS CLI**: Installed for bundling and deploying UDS bundles. For Mac/Linux with Homebrew: `brew install defenseunicorns/tap/uds`.
+- **UDS CLI**: Installed for bundling and deploying UDS bundles. For Mac/Linux with Homebrew: `brew install defenseunicorns/tap/uds`, additional methods are available at [UDS Documentation](https://uds.defenseunicorns.com/).
 - **Git Repository**: A repository (e.g., similar to `zarf-hello-world`) containing application configurations.
 - **Access to Mission Lab**: Ensure access to the Mission Lab environment (cloud, on-premises, or disconnected).
-- **Company-Specific Registry**: Access to an OCI-compliant registry (e.g., Harbor, Artifactory, or a private Docker registry) for storing Zarf packages and UDS bundles.
+- **Company-Specific Registry**: Access to an OCI-compliant registry (e.g., [Harbor](https://goharbor.io/), [Artifactory](https://jfrog.com/artifactory/), or a private Docker registry) for storing Zarf packages and UDS bundles.
 - **Registry Credentials**: Valid credentials (username, password, or token) for the company-specific registry.
-- **Pepr Knowledge**: Familiarity with Pepr policies in Mission Lab, which enforce security and compliance (e.g., namespace restrictions, pod security standards).
+- **Pepr Knowledge**: Familiarity with Pepr policies in Mission Lab, which enforce security and compliance (e.g., namespace restrictions, pod security standards). More information can be found in the [Pepr Documentation](https://pepr.dev/)
 - **GitLab CI/CD Access**: Access to the company’s GitLab instance for CI/CD pipelines, including credentials for pushing/pulling Zarf packages and UDS bundles to/from the repository.
 
 ## Process for Deploying Mission-Critical Applications
