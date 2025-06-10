@@ -5,6 +5,14 @@ metadata:
   version: 0.0.1
 
 components:
+  - name: mission-lab-application
+    required: true
+    manifests:
+      - name: hello-world-mission-lab-application
+        namespace: hello-world
+        files:
+        - mission-lab-application.yaml
+
   - name: hello-world-app
     required: true
     manifests:

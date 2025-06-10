@@ -1,0 +1,19 @@
+apiVersion: saic-oss.com/v1
+kind: MissionLabApplications
+metadata:
+  name: hello-world-app
+  namespace: hello-world
+spec:
+  version: 0.1.0
+  display-name: Hello World Application
+  application: hello-world-app
+  ingress: internal
+  owner: "john.e.miller@saic.com"
+  managed-by: "john.e.miller@saic.com"
+  license: MIT
+  proprietaryLicense: enterprise
+  description: "This is a sample application for demonstration purposes."
+  tags:
+    - demo
+    - example
+    - hello-world
